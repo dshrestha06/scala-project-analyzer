@@ -1,4 +1,4 @@
 <plugin>
-	<name>divbyzero</name>
-	<classname>edu.uiuc.scala.plugin.DivByZero</classname>
+	<name>scala-property-plugin</name>
+	<classname>edu.uiuc.scala.plugin.ScalaPropertyPlugin</classname>
 </plugin>
