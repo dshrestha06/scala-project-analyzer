@@ -18,7 +18,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
   private object Component extends PluginComponent {
     val global: ScalaPropertyPlugin.this.global.type = ScalaPropertyPlugin.this.global
-    val runsAfter = List[String]("lambdalift");
+    val runsAfter = List[String]("refchecks");
 
     val phaseName = ScalaPropertyPlugin.this.name
     def newPhase(_prev: Phase) = new ScalaPropertyPluginPhase(_prev)
@@ -26,8 +26,6 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
     class ScalaPropertyPluginPhase(prev: Phase) extends StdPhase(prev) {
       override def name = ScalaPropertyPlugin.this.name
       def apply(unit: CompilationUnit) {
-        //println(unit.body)
-        //println("----|")
         
         //Anonymous function
         for ( tree <- unit.body;
@@ -39,20 +37,6 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
         for (tree <- unit.body;
           if tree.isInstanceOf[ClassDef] && tree.symbol.toString().startsWith("trait")) {
             println("Trait found:" + tree)
-        }
-
-        for (tree <- unit.body) {
-        	/*
-        	println(tree)
-        	println(showRaw(tree))
-        	println("-----")
-        	println(tree.tpe)
-        	println(tree.symbol)
-        	println(tree.getClass())
-        	println(tree.tpe.getClass())
-        	println("-------------------------------------------")
-        	* 
-        	*/
         }
       }
     }
