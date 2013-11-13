@@ -26,18 +26,31 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
     class ScalaPropertyPluginPhase(prev: Phase) extends StdPhase(prev) {
     	override def name = ScalaPropertyPlugin.this.name
       def apply(unit: CompilationUnit) {
-        
-        //Anonymous function
-        for ( tree <- unit.body;
-        if tree.isInstanceOf[Function] && tree.symbol.rawname.toString().equals("$anonfun")) {
-        		report.increment("Anonymous Function", unit.source.file.name)
-          }
+        for (tree <- unit.body) {
 
-        //traits
-        for (tree <- unit.body;
-          if tree.isInstanceOf[ClassDef] && tree.symbol.toString().startsWith("trait")) {
-            report.increment("Trait", unit.source.file.name)
-        }
+	//Anonymous function
+          if (tree.isInstanceOf[Function] && tree.symbol.rawname.toString().equals("$anonfun"))
+            println("Found annonymous function:" + tree.symbol.toString())
+            //Trait
+          if (tree.isInstanceOf[ClassDef] && tree.symbol.toString().startsWith("trait"))
+            println("Trait found:" + tree.symbol.toString())
+          if (tree.isInstanceOf[ClassDef] && tree.symbol.toString().startsWith("class"))
+            println("Class found:" + tree.symbol.toString())
+          if (tree.isInstanceOf[DefDef])
+            println("Def found:" + tree.symbol.toString())
+          if (tree.isInstanceOf[TypeDef])
+            println("Type found:" + tree.symbol.toString())
+          if (tree.isInstanceOf[CaseDef])
+            println("Case found:" + tree)
+          if (tree.isInstanceOf[ValDef])
+            println("Value found:" + tree.symbol.toString())
+          if (tree.isInstanceOf[ModuleDef])
+            println("Module found:" + tree.symbol.toString())
+          if (tree.isInstanceOf[Star])
+            println("Star found:" + tree.symbol.toString())
+
+         }
+        
       }
     }
   }
