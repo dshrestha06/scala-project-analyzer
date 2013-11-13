@@ -30,24 +30,24 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
 	//Anonymous function
           if (tree.isInstanceOf[Function] && tree.symbol.rawname.toString().equals("$anonfun"))
-            println("Found annonymous function:" + tree.symbol.toString())
+            report.increment("Anonymous Function", unit.source.file.name)
             //Trait
           if (tree.isInstanceOf[ClassDef] && tree.symbol.toString().startsWith("trait"))
-            println("Trait found:" + tree.symbol.toString())
+            report.increment("Trait", unit.source.file.name)
           if (tree.isInstanceOf[ClassDef] && tree.symbol.toString().startsWith("class"))
-            println("Class found:" + tree.symbol.toString())
+            report.increment("Class", unit.source.file.name)
           if (tree.isInstanceOf[DefDef])
-            println("Def found:" + tree.symbol.toString())
+            report.increment("Def", unit.source.file.name)
           if (tree.isInstanceOf[TypeDef])
-            println("Type found:" + tree.symbol.toString())
+            report.increment("Type", unit.source.file.name)
           if (tree.isInstanceOf[CaseDef])
-            println("Case found:" + tree)
+            report.increment("Case", unit.source.file.name)
           if (tree.isInstanceOf[ValDef])
-            println("Value found:" + tree.symbol.toString())
+            report.increment("Value", unit.source.file.name)
           if (tree.isInstanceOf[ModuleDef])
-            println("Module found:" + tree.symbol.toString())
+            report.increment("Module", unit.source.file.name)
           if (tree.isInstanceOf[Star])
-            println("Star found:" + tree.symbol.toString())
+            report.increment("Star", unit.source.file.name)
 
          }
         
