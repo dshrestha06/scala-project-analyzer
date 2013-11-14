@@ -1,22 +1,40 @@
 package edu.uiuc.scala.plugin
 
-import java.io._
+import java.io.File
+import java.io.FileWriter
+import java.io.PrintWriter
+import java.util.HashMap
+import scala.collection.JavaConversions._
 
 class FileReport(fileName : String) {
-	def increment(key : String, source: String) {
-		increment(key, source, 1)
+	var source: String = null
+	val map:HashMap[String, Int] =  new HashMap[String, Int]()
+	
+  def increment(key : String) {
+		increment(key, 1)
 	}
 
-	def increment(key : String, source: String, count : Int) {
-		printToFile(new File(System.getProperty( "user.home" ) + "/output/" + fileName))(p => {
-		  p.println(List(source, key, count.toString).mkString(", "))
-		})
+	def start(fileName: String) {
+	  source = fileName
+	  map.clear
 	}
-
-	def printToFile(f: java.io.File)(op: PrintWriter => Unit) {
+	
+	def increment(key : String, count : Int) {
+		if (!map.containsKey(key)) map.put(key, 0)
+		map.put(key, count + map.get(key))
+	}
+	
+	def flush() {
+	  val f = new File(System.getProperty( "user.home" ) + "/output/" + fileName)
 	  val p = new PrintWriter(new FileWriter(f, true))
-	  try { op(p) } finally { p.close() }
+	  
+	  //use java iterator to support older scala version
+	 val iter = map.entrySet().iterator()
+	  while(iter.hasNext) {
+	    val entry = iter.next
+	    p.println(List(source, entry.getKey, entry.getValue.toString).mkString(", "))
+	  }
+	  p.flush
+	  p.close
 	}
-
-
 }
