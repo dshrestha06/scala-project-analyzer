@@ -45,13 +45,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
     	val abstractClassMap:HashSet[Int] = new HashSet[Int]()
     	
     	  for (tree <- unit.body) {
-    	  
-    	  //if the tree is a type of DefDef search to see if its children has any DefDef declaration
-    	  if(tree.isInstanceOf[DefDef]) {
-    		  tree.children.foreach { x => if(x.isInstanceOf[Block]) checkForChildMethodDef(x.asInstanceOf[Block]) }
-    	  }
-    	   
-    	    //Anonymous function
+    	  //Anonymous function
           if (tree.isInstanceOf[Function] && tree.symbol.rawname.toString().equals("$anonfun"))
         	  report.increment("Anonymous Function")
 
@@ -72,12 +66,26 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
     	   val matchTree = tree.asInstanceOf[Match]
     	    report.increment("Match Pattern")
     	 }
-    	 
+
           if (tree.isInstanceOf[DefDef]) {
             report.increment("Def")
-            
+
             val defDefTree = tree.asInstanceOf[DefDef]
-            if(defDefTree.mods.isOverride) report.increment("Override Method")
+            if (defDefTree.mods.isOverride) report.increment("Override Method")
+
+            //if the tree is a type of DefDef search to see if its children has any DefDef declaration
+            tree.children.foreach { x => if (x.isInstanceOf[Block]) checkForChildMethodDef(x.asInstanceOf[Block]) }
+
+            //check for higher order function. function that takes in function as an argument
+            tree.children.foreach { x =>
+              if (x.isInstanceOf[ValDef]) {
+                val argument = x.asInstanceOf[ValDef]
+                //TODO: might need some extra check
+                argument.children.foreach { y =>
+                  if (y.symbol.toString() contains "Function") report.increment("Higher order function")
+                }
+              }
+            }
           }
           
           if (tree.isInstanceOf[TypeDef])
