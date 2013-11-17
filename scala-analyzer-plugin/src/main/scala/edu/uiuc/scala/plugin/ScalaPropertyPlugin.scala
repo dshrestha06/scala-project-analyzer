@@ -28,12 +28,30 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
     class ScalaPropertyPluginPhase(prev: Phase) extends StdPhase(prev) {
     	override def name = ScalaPropertyPlugin.this.name
+    	
+      /**
+       * Takes in a tree block and recursively searches for a nested funciton declaration. 
+       */
+      def checkForChildMethodDef(block: Block) {
+    	  block.children.foreach { x => 
+    	    if(x.isInstanceOf[DefDef]) 
+    	    	report.increment("Nested function")
+    	    else if(x.isInstanceOf[Block]) 
+    	      checkForChildMethodDef(x.asInstanceOf[Block])}
+      }
+    	
       def apply(unit: CompilationUnit) {
     	report.start(unit.toString)
     	val abstractClassMap:HashSet[Int] = new HashSet[Int]()
     	
     	  for (tree <- unit.body) {
-    	  //Anonymous function
+    	  
+    	  //if the tree is a type of DefDef search to see if its children has any DefDef declaration
+    	  if(tree.isInstanceOf[DefDef]) {
+    		  tree.children.foreach { x => if(x.isInstanceOf[Block]) checkForChildMethodDef(x.asInstanceOf[Block]) }
+    	  }
+    	   
+    	    //Anonymous function
           if (tree.isInstanceOf[Function] && tree.symbol.rawname.toString().equals("$anonfun"))
         	  report.increment("Anonymous Function")
 
