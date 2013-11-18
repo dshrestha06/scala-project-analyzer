@@ -1,11 +1,11 @@
 package edu.uiuc.scala.plugin
 
 import java.util.HashSet
-
 import scala.tools.nsc.Global
 import scala.tools.nsc.Phase
 import scala.tools.nsc.plugins.Plugin
 import scala.tools.nsc.plugins.PluginComponent
+import scala.concurrent.Future
 
 /**
  * Copied from scala compiler plugin example.
@@ -45,6 +45,11 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
     	val abstractClassMap:HashSet[Int] = new HashSet[Int]()
     	
     	  for (tree <- unit.body) {
+    	    if(tree.isInstanceOf[ApplyToImplicitArgs]) {
+    	    	val implicitArgs = tree.asInstanceOf[ApplyToImplicitArgs]
+    	    	if(implicitArgs.symbol.name.toString() equals "future") report.increment("Future")
+    	    }
+    	    
     	  //Anonymous function
           if (tree.isInstanceOf[Function] && tree.symbol.rawname.toString().equals("$anonfun"))
         	  report.increment("Anonymous Function")
@@ -92,8 +97,13 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             report.increment("Type")
           if (tree.isInstanceOf[CaseDef])
             report.increment("Case")
-          if (tree.isInstanceOf[ValDef])
+          if (tree.isInstanceOf[ValDef]) {
             report.increment("Value")
+            
+            //promise
+            val valDef = tree.asInstanceOf[ValDef]
+            if(valDef.rhs.toString() contains "scala.concurrent.`package`.promise") report.increment("Promise")
+          }
           if (tree.isInstanceOf[ModuleDef])
             report.increment("Module")
           if (tree.isInstanceOf[Star])
