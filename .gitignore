@@ -1,2 +1,3 @@
 target/
 scala-analyzer-plugin/target/
+.class
