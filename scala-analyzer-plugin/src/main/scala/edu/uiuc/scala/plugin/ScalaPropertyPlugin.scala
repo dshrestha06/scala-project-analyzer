@@ -18,59 +18,60 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
   val components = List[PluginComponent](Component)
   private object Component extends PluginComponent {
     val global: ScalaPropertyPlugin.this.global.type = ScalaPropertyPlugin.this.global
-   
+
     //val runsAfter = List[String]("packageobjects");
-     val runsAfter = List[String]("refchecks");
+    val runsAfter = List[String]("refchecks");
 
     val phaseName = ScalaPropertyPlugin.this.name
     def newPhase(_prev: Phase) = new ScalaPropertyPluginPhase(_prev)
     val report = new FileReport(new java.io.File(".").getAbsoluteFile.getParentFile.getName)
 
     class ScalaPropertyPluginPhase(prev: Phase) extends StdPhase(prev) {
-    	override def name = ScalaPropertyPlugin.this.name
-    	
+      override def name = ScalaPropertyPlugin.this.name
+
       /**
-       * Takes in a tree block and recursively searches for a nested funciton declaration. 
+       * Takes in a tree block and recursively searches for a nested funciton declaration.
        */
       def checkForChildMethodDef(block: Block) {
-    	  block.children.foreach { x => 
-    	    if(x.isInstanceOf[DefDef]) 
-    	    	report.increment("Nested function")
-    	    else if(x.isInstanceOf[Block]) 
-    	      checkForChildMethodDef(x.asInstanceOf[Block])}
+        block.children.foreach { x =>
+          if (x.isInstanceOf[DefDef])
+            report.increment("Nested function")
+          else if (x.isInstanceOf[Block])
+            checkForChildMethodDef(x.asInstanceOf[Block])
+        }
       }
-    	
+
       def apply(unit: CompilationUnit) {
-    	report.start(unit.toString)
-    	val abstractClassMap:HashSet[Int] = new HashSet[Int]()
-    	
-    	  for (tree <- unit.body) {
-    	    if(tree.isInstanceOf[ApplyToImplicitArgs]) {
-    	    	val implicitArgs = tree.asInstanceOf[ApplyToImplicitArgs]
-    	    	if(implicitArgs.symbol.name.toString() equals "future") report.increment("Future")
-    	    }
-    	    
-    	  //Anonymous function
+        report.start(unit.toString)
+        val abstractClassMap: HashSet[Int] = new HashSet[Int]()
+
+        for (tree <- unit.body) {
+          if (tree.isInstanceOf[ApplyToImplicitArgs]) {
+            val implicitArgs = tree.asInstanceOf[ApplyToImplicitArgs]
+            if (implicitArgs.symbol.name.toString() equals "future") report.increment("Future")
+          }
+
+          //Anonymous function
           if (tree.isInstanceOf[Function] && tree.symbol.rawname.toString().equals("$anonfun"))
-        	  report.increment("Anonymous Function")
+            report.increment("Anonymous Function")
 
           if (tree.isInstanceOf[ClassDef]) {
             report.increment("Class")
-            
-            val classDefTree : ClassDef = tree.asInstanceOf[ClassDef]
-            
-            if(classDefTree.mods.hasAbstractFlag) report.increment("Abstract Class")
-            if(classDefTree.mods.isTrait) report.increment("Trait")
-            if(classDefTree.mods.isCase) report.increment("Case Class")
-            
-            if(classDefTree.tparams.size > 0) report.increment("Generic Class")
+
+            val classDefTree: ClassDef = tree.asInstanceOf[ClassDef]
+
+            if (classDefTree.mods.hasAbstractFlag) report.increment("Abstract Class")
+            if (classDefTree.mods.isTrait) report.increment("Trait")
+            if (classDefTree.mods.isCase) report.increment("Case Class")
+
+            if (classDefTree.tparams.size > 0) report.increment("Generic Class")
           }
-    	
-         //requires packageobjects build phase
-    	 if (tree.isInstanceOf[Match]) {
-    	   val matchTree = tree.asInstanceOf[Match]
-    	    report.increment("Match Pattern")
-    	 }
+
+          //requires packageobjects build phase
+          if (tree.isInstanceOf[Match]) {
+            val matchTree = tree.asInstanceOf[Match]
+            report.increment("Match Pattern")
+          }
 
           if (tree.isInstanceOf[DefDef]) {
             report.increment("Def")
@@ -78,6 +79,9 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             val defDefTree = tree.asInstanceOf[DefDef]
             if (defDefTree.mods.isOverride) report.increment("Override Method")
             if (defDefTree.symbol.annotations.mkString(",").contains("scala.annotation.tailrec")) report.increment("optimized tail recursion")
+
+            // if there are multiple parameters, it's a curry function
+            if (defDefTree.vparamss.length > 1) report.increment("Curry Function")
 
             //if the tree is a type of DefDef search to see if its children has any DefDef declaration
             tree.children.foreach { x => if (x.isInstanceOf[Block]) checkForChildMethodDef(x.asInstanceOf[Block]) }
@@ -93,7 +97,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
               }
             }
           }
-          
+
           if (tree.isInstanceOf[MemberDef]) {
             val memberTree = tree.asInstanceOf[MemberDef]
             if (memberTree.symbol.isVal) report.increment("Member Value")
@@ -107,18 +111,26 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             report.increment("Case")
           if (tree.isInstanceOf[ValDef]) {
             report.increment("Value")
-            
+
             //promise
             val valDef = tree.asInstanceOf[ValDef]
-            if(valDef.rhs.toString() contains "scala.concurrent.`package`.promise") report.increment("Promise")
+            if (valDef.rhs.toString() contains "scala.concurrent.`package`.promise") report.increment("Promise")
+
+            // Another way of using curry functions
+            if (valDef.rhs.toString() contains ".curried") report.increment("Curry Function")
           }
           if (tree.isInstanceOf[ModuleDef])
             report.increment("Module")
           if (tree.isInstanceOf[Star])
             report.increment("Star")
-         }
-    	
-    	report.flush
+
+          if (!tree.freeTerms.isEmpty)
+            println(tree.freeTerms.mkString(","))
+          if (!tree.freeTypes.isEmpty)
+            println(tree.freeTypes.mkString(","))
+        }
+
+        report.flush
       }
     }
   }
