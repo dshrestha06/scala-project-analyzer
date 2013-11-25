@@ -118,7 +118,14 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
             // Another way of using curry functions
             if (valDef.rhs.toString() contains ".curried") report.increment("Curry Function")
+
           }
+
+          if (tree.isInstanceOf[TypeApply]) {
+            val valDef = tree.asInstanceOf[TypeApply]
+            if (valDef.symbol.fullName contains "scala.collection.parallel") report.increment("Parallel collection")
+          }
+
           if (tree.isInstanceOf[ModuleDef])
             report.increment("Module")
           if (tree.isInstanceOf[Star])
