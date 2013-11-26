@@ -30,7 +30,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
       override def name = ScalaPropertyPlugin.this.name
 
       /**
-       * Takes in a tree block and recursively searches for a nested funciton declaration.
+       * Takes in a tree block and recursively searches for a nested function declaration.
        */
       def checkForChildMethodDef(block: Block) {
         block.children.foreach { x =>
@@ -46,10 +46,16 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
         val abstractClassMap: HashSet[Int] = new HashSet[Int]()
 
         for (tree <- unit.body) {
+
           if (tree.isInstanceOf[ApplyToImplicitArgs]) {
             val implicitArgs = tree.asInstanceOf[ApplyToImplicitArgs]
             if (implicitArgs.symbol.name.toString() equals "future") report.increment("Future")
           }
+
+          if (tree.symbol != null && tree.tpe != null 
+              && (tree.symbol.toString() contains "trait") 
+              && (tree.tpe.toString() contains "akka.actor")) 
+            report.increment("Actor")
 
           //Anonymous function
           if (tree.isInstanceOf[Function] && tree.symbol.rawname.toString().equals("$anonfun"))
@@ -65,6 +71,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             if (classDefTree.mods.isCase) report.increment("Case Class")
 
             if (classDefTree.tparams.size > 0) report.increment("Generic Class")
+
           }
 
           //requires packageobjects build phase
