@@ -134,7 +134,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
                 val argument = x.asInstanceOf[ValDef]
                 //TODO: might need some extra check
                 argument.children.foreach { y =>
-                  if (y.symbol.toString() contains "Function") report.increment("Higher order function")
+                  if (y.symbol != null && (y.symbol.toString() contains "Function")) report.increment("Higher order function")
                 }
               }
             }
