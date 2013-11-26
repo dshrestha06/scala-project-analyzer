@@ -45,12 +45,13 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
        * Increment the report if there are any recursive calls in the method body
        */
       def findRecursiveMethodCalls(defDef: DefDef) {
-    	  defDef.children.foreach { x => 
-    	    if(x.isInstanceOf[Block] || x.isInstanceOf[If])
-    	    	findRecursiveMethodCalls(x.asInstanceOf[Block], defDef)
-    	      else 
-    	        if(x.symbol == defDef.symbol) report.increment("Recursive Method Call")
-    	  }
+        defDef.children.foreach { x =>
+          if (x.isInstanceOf[Block])
+            findRecursiveMethodCalls(x.asInstanceOf[Block], defDef)
+          else if (x.isInstanceOf[If])
+            findRecursiveMethodCalls(x.asInstanceOf[If], defDef)
+          else if (x.symbol == defDef.symbol) report.increment("Recursive Method Call")
+        }
       }
 
       /**
@@ -63,17 +64,16 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             findRecursiveMethodCalls(x, parentDef)
         }
       }
-      
+
       /**
        * Increment if there are any inner class definition
        */
       def findNestedClasses(classDef: Tree) {
-         classDef.children.foreach { x => 
-    	    if(x.isInstanceOf[ClassDef]) report.increment("Nested Class")
-    	  }
+        classDef.children.foreach { x =>
+          if (x.isInstanceOf[ClassDef]) report.increment("Nested Class")
+        }
       }
 
-      
       def apply(unit: CompilationUnit) {
         report.start(unit.toString)
         val abstractClassMap: HashSet[Int] = new HashSet[Int]()
@@ -85,9 +85,9 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             if (implicitArgs.symbol.name.toString() equals "future") report.increment("Future")
           }
 
-          if (tree.symbol != null && tree.tpe != null 
-              && (tree.symbol.toString() contains "trait") 
-              && (tree.tpe.toString() contains "akka.actor")) 
+          if (tree.symbol != null && tree.tpe != null
+            && (tree.symbol.toString() contains "trait")
+            && (tree.tpe.toString() contains "akka.actor"))
             report.increment("Actor")
 
           //Anonymous function
@@ -104,7 +104,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             if (classDefTree.mods.isCase) report.increment("Case Class")
             if (classDefTree.tparams.size > 0) report.increment("Generic Class")
 
-            if (classDefTree.mods.isSealed) report.increment("Sealed Class")            
+            if (classDefTree.mods.isSealed) report.increment("Sealed Class")
             findNestedClasses(classDefTree)
           }
 
@@ -120,8 +120,8 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             val defDefTree = tree.asInstanceOf[DefDef]
             if (defDefTree.mods.isOverride) report.increment("Override Method")
             if (defDefTree.symbol.annotations.mkString(",").contains("scala.annotation.tailrec")) report.increment("optimized tail recursion")
-            if(defDefTree.mods.isDeferred) report.increment("Deferred Method")
-            
+            if (defDefTree.mods.isDeferred) report.increment("Deferred Method")
+
             // if there are multiple parameters, it's a curry function
             if (defDefTree.vparamss.length > 1) report.increment("Curry Function")
 
@@ -138,7 +138,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
                 }
               }
             }
-            
+
             findRecursiveMethodCalls(defDefTree)
           }
 
@@ -164,7 +164,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
             if (valDef.rhs.toString() contains ".curried") report.increment("Curry Function")
 
           }
-          
+
           if (tree.isInstanceOf[If]) report.increment("If Condition")
 
           if (tree.isInstanceOf[TypeApply]) {
