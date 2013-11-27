@@ -1,3 +1,4 @@
+
 package edu.uiuc.scala.plugin
 
 import java.util.HashSet
@@ -5,7 +6,6 @@ import scala.tools.nsc.Global
 import scala.tools.nsc.Phase
 import scala.tools.nsc.plugins.Plugin
 import scala.tools.nsc.plugins.PluginComponent
-import scala.concurrent.Future
 
 /**
  * Copied from scala compiler plugin example.
@@ -144,8 +144,11 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
           if (tree.isInstanceOf[MemberDef]) {
             val memberTree = tree.asInstanceOf[MemberDef]
-            if (memberTree.symbol.isVal) report.increment("Member Value")
-            if (memberTree.symbol.isVar) report.increment("Member Var")
+          
+            //.isVal and .isVar is not supported in 2.9.2
+            if (memberTree.symbol.isValue) report.increment("Member Value")
+            if (memberTree.symbol.isVariable) report.increment("Member Var")
+            
             if (memberTree.symbol.isLazy) report.increment("Member Lazy Value")
           }
 
@@ -177,10 +180,11 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
           if (tree.isInstanceOf[Star])
             report.increment("Star")
 
+            /*// freeTerms is not supported in 2.9.2
           if (!tree.freeTerms.isEmpty)
             println(tree.freeTerms.mkString(","))
           if (!tree.freeTypes.isEmpty)
-            println(tree.freeTypes.mkString(","))
+            println(tree.freeTypes.mkString(","))*/
         }
 
         report.flush

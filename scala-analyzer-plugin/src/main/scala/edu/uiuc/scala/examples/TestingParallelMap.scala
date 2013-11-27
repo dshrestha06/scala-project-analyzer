@@ -1,5 +1,7 @@
 package edu.uiuc.scala.examples
 
+//@Since 2.10
+/*
 import collection.parallel.mutable.ParTrieMap
 import collection.parallel.ForkJoinTaskSupport
 object TestingParallelMap {
@@ -15,4 +17,4 @@ object TestingParallelMap {
     }
   }
 }
-
+*/
