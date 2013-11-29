@@ -60,6 +60,8 @@ object StatsAggregator {
     outputFile.delete()
     statsCounter.clear
     Source.fromFile(new File("output/project.csv")).getLines.filter(_.split(",").length > 1).foreach(countAllProjects)
+    statsCounter("Total number of Scala projects") = totalNumberOfProjects
+    statsCounter("Total number of Scala files") = files.size
     flush(outputFile)
   }
 
@@ -67,8 +69,6 @@ object StatsAggregator {
     new File("output").mkdir();
     printPerProject
     printAllProjects
-    println("Total number of projects: " + totalNumberOfProjects)
-    println("Total number of files: " + files.size)
   }
 
 }
