@@ -49,8 +49,10 @@ object StatsAggregator {
     for (file <- new File(System.getProperty("user.home") + "/output/").listFiles) {
       totalNumberOfProjects += 1
       fileName = file.getName
+      files.clear
       statsCounter.clear
       Source.fromFile(file).getLines.filter(_.split(",").length > 1).foreach(countPerProject)
+      statsCounter(fileName + ", Total number of Scala files") = files.size
       flush(outputFile)
     }
   }
@@ -61,7 +63,6 @@ object StatsAggregator {
     statsCounter.clear
     Source.fromFile(new File("output/project.csv")).getLines.filter(_.split(",").length > 1).foreach(countAllProjects)
     statsCounter("Total number of Scala projects") = totalNumberOfProjects
-    statsCounter("Total number of Scala files") = files.size
     flush(outputFile)
   }
 
