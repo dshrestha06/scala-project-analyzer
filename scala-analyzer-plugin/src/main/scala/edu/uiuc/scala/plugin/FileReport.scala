@@ -25,7 +25,7 @@ class FileReport(fileName : String) {
 	}
 	
 	def flush() {
-	  val f = new File(System.getProperty( "user.home" ) + "/output/" + fileName)
+	  val f = new File("/home/ubuntu/output/" + fileName)
 	  val p = new PrintWriter(new FileWriter(f, true))
 	  
 	  //use java iterator to support older scala version

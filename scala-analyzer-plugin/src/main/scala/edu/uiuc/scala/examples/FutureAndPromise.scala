@@ -1,5 +1,5 @@
 package edu.uiuc.scala.examples
-
+/*
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
@@ -14,3 +14,4 @@ class FutureAndPromise {
     }
   }
 }
+*/

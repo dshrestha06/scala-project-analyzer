@@ -1,8 +1,9 @@
 package edu.uiuc.scala.examples
 
-import akka.actor.Actor
-import akka.actor.ActorSystem
-import akka.actor.Props
+/*
+import scala.actor.Actor
+import scala.actor.ActorSystem
+import scala.actor.Props
 
 class HelloActor extends Actor {
   def receive = {
@@ -10,4 +11,4 @@ class HelloActor extends Actor {
     case _       => println("huh?")
   }
 }
-
+*/

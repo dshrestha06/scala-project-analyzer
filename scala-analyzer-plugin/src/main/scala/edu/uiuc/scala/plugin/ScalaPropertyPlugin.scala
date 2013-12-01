@@ -99,7 +99,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
             val classDefTree: ClassDef = tree.asInstanceOf[ClassDef]
 
-            if (classDefTree.mods.hasAbstractFlag) report.increment("Abstract Class")
+//            if (classDefTree.mods.hasAbstractFlag) report.increment("Abstract Class")
             if (classDefTree.mods.isTrait) report.increment("Trait")
             if (classDefTree.mods.isCase) report.increment("Case Class")
             if (classDefTree.tparams.size > 0) report.increment("Generic Class")
