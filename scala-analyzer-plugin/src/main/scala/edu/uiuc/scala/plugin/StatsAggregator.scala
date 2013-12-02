@@ -1,9 +1,10 @@
 package edu.uiuc.scala.plugin
 
-import scala.io.Source
 import java.io.File
-import java.io.PrintWriter
 import java.io.FileWriter
+import java.io.PrintWriter
+import scala.io.Source
+import scala.collection.mutable.SortedSet
 
 object StatsAggregator {
 
@@ -56,7 +57,55 @@ object StatsAggregator {
       flush(outputFile)
     }
   }
+  
+  
+  def printPerProjectCompact {
+    val file = new File("output/project-compact.csv")
+    file.delete()
+    val p = new PrintWriter(new FileWriter(file, true))
+	  
+    val stats = collection.mutable.Map[String, collection.mutable.Map[String, String]]()
+    var features = collection.mutable.HashSet[String]()
+    var projectName = ""
+    
+    Source.fromFile(new File("output/project.csv")).getLines.filter(_.split(",").length > 1).foreach(line => {
+      val split = line.split(",")
+      val projectName= split(0)
+      if (!stats.contains(projectName)) {
+        val featuresMap = collection.mutable.Map[String, String]()
+        stats.put(projectName, featuresMap)
+      }
+      stats.get(projectName).get.put(split(1), split(2))
+      features.add(split(1))    
+    });
+    
+    val sortedFeatures = features.to[SortedSet]
+    p.print("project,")
+    p.println(sortedFeatures.mkString(","))
+    
+    if(stats.contains(".DS_Store")) stats.remove(".DS_Store")
+    stats.keySet.to[SortedSet].foreach(project => {
+      p.print(project)
+      p.print(",")
+      
+      val projectFeatureMap = stats.get(project).get
+      
+      sortedFeatures.foreach(feature => {
+        if (projectFeatureMap.contains(feature)) {
+          p.print(projectFeatureMap.get(feature).get)
+          p.print(",")
+        } else {
+          p.print("0,")
+        }
+      });
+      p.println("")
+    });
+    
+    p.flush()
+     
+  }
 
+  
   def printAllProjects {
     val outputFile = new File("output/allprojects.csv")
     outputFile.delete()
@@ -66,10 +115,12 @@ object StatsAggregator {
     flush(outputFile)
   }
 
+  
   def main(args: Array[String]) {
     new File("output").mkdir();
     printPerProject
     printAllProjects
+    printPerProjectCompact
   }
 
 }
