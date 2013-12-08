@@ -1,11 +1,12 @@
 package edu.uiuc.scala.plugin
 
 import java.util.HashSet
+
+import scala.concurrent.Future
 import scala.tools.nsc.Global
 import scala.tools.nsc.Phase
 import scala.tools.nsc.plugins.Plugin
 import scala.tools.nsc.plugins.PluginComponent
-import scala.concurrent.Future
 
 /**
  * Copied from scala compiler plugin example.
@@ -158,8 +159,11 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
             //promise
             val valDef = tree.asInstanceOf[ValDef]
+            
             if (valDef.rhs.toString() contains "scala.concurrent.`package`.promise") report.increment("Promise")
-
+            if (valDef.rhs.toString() contains "scala.concurrent.Promise") report.increment("Promise")
+            if (valDef.rhs.tpe.toString() contains "scala.concurrent.Future") report.increment("Future")
+             
             // Another way of using curry functions
             if (valDef.rhs.toString() contains ".curried") report.increment("Curry Function")
 
