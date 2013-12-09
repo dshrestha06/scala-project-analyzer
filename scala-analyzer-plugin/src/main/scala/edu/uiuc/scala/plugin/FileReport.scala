@@ -10,11 +10,6 @@ class FileReport(fileName : String) {
 	var source: String = null
 	val map:HashMap[String, Int] =  new HashMap[String, Int]()
 	
-	//start out fresh
-	if(new File(System.getProperty( "user.home" ) + "/output/" + fileName).exists())
-		new File(System.getProperty( "user.home" ) + "/output/" + fileName).delete()
-
-	println("------------- starting file report " + fileName )
 	
   def increment(key : String) {
 		increment(key, 1)
@@ -31,7 +26,7 @@ class FileReport(fileName : String) {
 	}
 	
 	def flush() {
-	  val f = new File(System.getProperty( "user.home" ) + "/output/" + fileName)
+	  val f = new File("/home/ubuntu" + "/output/" + fileName)
 	  val p = new PrintWriter(new FileWriter(f, true))
 	  
 	  //use java iterator to support older scala version
