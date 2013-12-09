@@ -10,3 +10,5 @@ Now, use the jar plugin to compile a scala file. There are example files like: A
 scalac -Xplugin:target/scala-analyzer-plugin-0.0.1-SNAPSHOT-jar-with-dependencies.jar src/main/scala/edu/uiuc/scala/examples/Anonymous.scala
 
 scalac -Xplugin:target/scala-analyzer-plugin-0.0.1-SNAPSHOT-jar-with-dependencies.jar src/main/scala/edu/uiuc/scala/examples/Traits.scala
+
+To add all the stats collected from all projects, use the aggregate.sh command. This will print out the result. 

@@ -10,6 +10,12 @@ class FileReport(fileName : String) {
 	var source: String = null
 	val map:HashMap[String, Int] =  new HashMap[String, Int]()
 	
+	//start out fresh
+	if(new File(System.getProperty( "user.home" ) + "/output/" + fileName).exists())
+		new File(System.getProperty( "user.home" ) + "/output/" + fileName).delete()
+
+	println("------------- starting file report " + fileName )
+	
   def increment(key : String) {
 		increment(key, 1)
 	}
