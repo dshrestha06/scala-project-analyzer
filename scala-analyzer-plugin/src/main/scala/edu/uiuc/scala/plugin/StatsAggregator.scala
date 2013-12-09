@@ -47,14 +47,17 @@ object StatsAggregator {
   def printPerProject {
     val outputFile = new File("output/project.csv")
     outputFile.delete()
-    for (file <- new File(System.getProperty("user.home") + "/output/").listFiles) {
-      totalNumberOfProjects += 1
-      fileName = file.getName
-      files.clear
-      statsCounter.clear
-      Source.fromFile(file).getLines.filter(_.split(",").length > 1).foreach(countPerProject)
-      statsCounter(fileName + ", Total number of Scala files") = files.size
-      flush(outputFile)
+    for (file <- new File("/home/ubuntu/output/").listFiles) {
+      if(!file.getName().equals(".DS_Store")) {
+        println (file.getName())
+	      totalNumberOfProjects += 1
+	      fileName = file.getName
+	      files.clear
+	      statsCounter.clear
+	      Source.fromFile(file).getLines.filter(_.split(",").length > 1).foreach(countPerProject)
+	      statsCounter(fileName + ", Total number of Scala files") = files.size
+	      flush(outputFile)
+    	}
     }
   }
   
@@ -102,7 +105,6 @@ object StatsAggregator {
     });
     
     p.flush()
-     
   }
 
   
@@ -115,12 +117,35 @@ object StatsAggregator {
     flush(outputFile)
   }
 
+  def printPerProjectStatsCompact {
+     val outputFile = new File("output/sbt-stats-projects-compact.csv")
+     if (outputFile.exists()) outputFile.delete()
+     val p = new PrintWriter(new FileWriter(outputFile, true))
+     p.write("Projects, Total Files, Total Scala Files, Total Java Files, Total Size (bytes), Average Size (bytes), Average length (lines), Total lines, Code lines, Comment lines, Blank lines, Brackets lines,\r\n")
+      for (file <- new File("/home/ubuntu/sbt-stats-output/").listFiles) {
+        if(!file.getName().equals(".DS_Store")) {
+		      fileName = file.getName
+		      p.write(file.getName());
+		      p.write(",");
+		      
+		      Source.fromFile(file).getLines.filter(_.split(",").length > 1).foreach(line => {
+		          var arr = line.split(",")
+		    	  p.write(arr(1).trim)
+		    	  p.write(",")
+		      });
+		      
+		      p.write("\r\n");
+		      p.flush();
+        }
+    }
+  }
   
   def main(args: Array[String]) {
     new File("output").mkdir();
     printPerProject
     printAllProjects
     printPerProjectCompact
+    printPerProjectStatsCompact
   }
 
 }
