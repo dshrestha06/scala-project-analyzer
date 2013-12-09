@@ -1,7 +1,9 @@
 
 package edu.uiuc.scala.plugin
 
+import java.util.ArrayList
 import java.util.HashSet
+
 import scala.tools.nsc.Global
 import scala.tools.nsc.Phase
 import scala.tools.nsc.plugins.Plugin
@@ -25,6 +27,36 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
     val phaseName = ScalaPropertyPlugin.this.name
     def newPhase(_prev: Phase) = new ScalaPropertyPluginPhase(_prev)
     val report = new FileReport(new java.io.File(".").getAbsoluteFile.getParentFile.getName)
+    
+    val javaList = List("java.util.Collection","java.util.AbstractCollection", "java.util.AbstractList", "java.util.AbstractQueue", "java.util.AbstractSequentialList", "java.util.AbstractSet",
+	"java.util.ArrayBlockingQueue", "java.util.ArrayDeque", "java.util.ArrayList", "java.util.AttributeList",
+	"java.util.concurrent.ConcurrentLinkedQueue", "java.util.concurrent.ConcurrentSkipListSet", "java.util.concurrent.CopyOnWriteArrayList",
+	"java.util.concurrent.CopyOnWriteArraySet", "java.util.concurrent.DelayQueue", "java.util.EnumSet", "java.util.HashSet",
+	"java.util.concurrent.LinkedBlockingDeque", "java.util.concurrent.LinkedBlockingQueue", "java.util.LinkedHashSet", "java.util.LinkedList",
+	"java.util.concurrent.PriorityBlockingQueue", "java.util.PriorityQueue",
+	"java.util.Stack", "java.util.SynchronousQueue", "java.util.TreeSet", "java.util.Vector")
+
+    val javaMap = List("java.util.Map","java.util.AbstractMap", "java.util.concurrent.ConcurrentHashMap", "java.util.concurrent.ConcurrentSkipListMap",
+        "java.util.EnumMap", "java.util.HashMap", "java.util.Hashtable", "java.util.IdentityHashMap", "java.util.LinkedHashMap", "java.util.Properties", "java.util.TreeMap", "java.util.WeakHashMap")
+	
+        	
+    val scalaMutableMap = List("scala.collection.mutable.HashMap","scala.collection.mutable.Map","scala.collection.mutable.ConcurrentMap", " scala.collection.mutable.DefaultMapModel", " scala.collection.mutable.HashMap", " scala.collection.mutable.ImmutableMapAdaptor",
+    		"scala.collection.mutable.LinkedHashMap", " scala.collection.mutable.ListMap", " scala.collection.mutable.Map", " scala.collection.mutable.MapProxy", " scala.collection.mutable.MultiMap",
+    		"scala.collection.mutable.ObservableMap", " scala.collection.mutable.OpenHashMap", " scala.collection.mutable.PicklerEnv", " scala.collection.mutable.SynchronizedMap",
+    		"scala.collection.mutable.SystemProperties", " scala.collection.mutable.TrieMap", " scala.collection.mutable.WeakHashMap")
+
+    val scalaImmutableMap = List("scala.collection.immutable.Map","scala.collection.immutable.DefaultMap", " scala.collection.immutable.HashMap", " scala.collection.immutable.HashTrieMap", " scala.collection.immutable.IntMap",
+    		"scala.collection.immutable.ListMap", " scala.collection.immutable.LongMap", " scala.collection.immutable.MapProxy", " scala.collection.immutable.SortedMap",
+    		"scala.collection.immutable.TreeMap")
+    
+    val scalaMutableSeq = List("scala.collection.mutable.List","scala.collection.mutable.Seq","scala.collection.mutable.ArrayBuffer", "scala.collection.mutable.ArraySeq", "scala.collection.mutable.ArrayStack", "scala.collection.mutable.Buffer", "scala.collection.mutable.BufferProxy", "scala.collection.mutable.DoubleLinkedList", "scala.collection.mutable.IndexedSeq", "scala.collection.mutable.IndexedSeqView", "scala.collection.mutable.LinearSeq", "scala.collection.mutable.LinkedList", "scala.collection.mutable.ListBuffer", 
+    		"scala.collection.mutable.MutableList", "scala.collection.mutable.ObservableBuffer", "scala.collection.mutable.Queue", "scala.collection.mutable.QueueProxy", "scala.collection.mutable.ResizableArray", "scala.collection.mutable.Stack", "scala.collection.mutable.StackProxy", "scala.collection.mutable.StringBuilder", "scala.collection.mutable.SynchronizedBuffer", "scala.collection.mutable.SynchronizedQueue",
+    		"scala.collection.mutable.SynchronizedStack", "scala.collection.mutable.UnrolledBuffer", "scala.collection.mutable.WrappedArray")
+    
+    val scalaImmutableSeq = List("scala.collection.immutable.List","scala.collection.immutable.LinkedList","scala.collection.immutable.Seq","scala.collection.immutable.IndexedSeq", "scala.collection.immutable.LinearSeq", "scala.collection.immutable.List", "scala.collection.immutable.NumericRange",
+		"scala.collection.immutable.Queue", "scala.collection.immutable.Range", "scala.collection.immutable.Stack", "scala.collection.immutable.Stream",
+		"scala.collection.immutable.Vector", "scala.collection.immutable.WrappedString")
+
 
     class ScalaPropertyPluginPhase(prev: Phase) extends StdPhase(prev) {
       override def name = ScalaPropertyPlugin.this.name
@@ -161,11 +193,53 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
             //promise
             val valDef = tree.asInstanceOf[ValDef]
+            
             if (valDef.rhs.toString() contains "scala.concurrent.`package`.promise") report.increment("Promise")
-
+            if (valDef.rhs.toString() contains "scala.concurrent.Promise") report.increment("Promise")
+            if (valDef.rhs.tpe.toString() contains "scala.concurrent.Future") report.increment("Future")
+             
             // Another way of using curry functions
             if (valDef.rhs.toString() contains ".curried") report.increment("Curry Function")
 
+            
+            
+            //Java features
+            //java list
+            if(valDef.rhs.tpe.toString() contains "java.util") {
+	            javaList.foreach(feature => {
+	              if (valDef.rhs.tpe.toString() contains feature) { 
+	                report.increment("Java List");
+	              }
+	            })
+	            
+	            javaMap.foreach(feature => {
+	              if (valDef.rhs.tpe.toString() contains feature) { 
+	                report.increment("Java Map");
+	              }
+	            })
+            }
+            
+            //scala collection/map
+            if(valDef.rhs.tpe.toString() contains "scala.collection") {
+               scalaMutableSeq.foreach(feature => {
+	              if (valDef.rhs.tpe.toString() contains feature) report.increment("Scala Mutable Seq");
+	            })
+	       
+	            scalaImmutableSeq.foreach(feature => {
+	              if (valDef.rhs.tpe.toString() contains feature) report.increment("Scala Immutable Seq");
+	            })
+	            
+	            scalaMutableMap.foreach(feature => {
+	              if (valDef.rhs.tpe.toString() contains feature) report.increment("Scala Mutable Map");
+	              
+	            })
+	            scalaImmutableMap.foreach(feature => {
+	              if (valDef.rhs.tpe.toString() contains feature) report.increment("Scala Immutable Map");
+	            })
+            }
+             
+            if (valDef.rhs.tpe.toString() startsWith "List") report.increment("Scala Immutable Seq");
+            
           }
 
           if (tree.isInstanceOf[If]) report.increment("If Condition")

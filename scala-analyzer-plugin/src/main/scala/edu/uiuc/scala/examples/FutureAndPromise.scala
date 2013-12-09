@@ -12,5 +12,9 @@ class FutureAndPromise {
       val a = 1
       p success 5
     }
+  
+    var p1 = Promise[String]
+    var f1 = p1.future
+    
   }
 }
