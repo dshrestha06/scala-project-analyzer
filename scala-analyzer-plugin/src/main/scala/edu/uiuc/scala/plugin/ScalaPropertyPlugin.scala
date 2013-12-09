@@ -118,7 +118,7 @@ class ScalaPropertyPlugin(val global: Global) extends Plugin {
 
           if (tree.symbol != null && tree.tpe != null
             && (tree.symbol.toString() contains "trait")
-            && (tree.tpe.toString() contains "akka.actor"))
+            && ((tree.tpe.toString() contains "scala.actor") || (tree.tpe.toString() contains "akka.actor")))
             report.increment("Actor")
 
           //Anonymous function
