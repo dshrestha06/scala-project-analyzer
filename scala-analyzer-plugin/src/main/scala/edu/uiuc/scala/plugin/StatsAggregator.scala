@@ -125,16 +125,27 @@ object StatsAggregator {
       for (file <- new File("/home/ubuntu/sbt-stats-output/").listFiles) {
         if(!file.getName().equals(".DS_Store")) {
 		      fileName = file.getName
-		      p.write(file.getName());
-		      p.write(",");
+		      var sb = new StringBuilder()
 		      
+		      sb.append(file.getName());
+		      sb.append(",");
+		      var count = 0;
+		      var ignore = false
 		      Source.fromFile(file).getLines.filter(_.split(",").length > 1).foreach(line => {
-		          var arr = line.split(",")
-		    	  p.write(arr(1).trim)
-		    	  p.write(",")
+		         count = count + 1
+		    	  var arr = line.split(",")
+		    	  if(count ==1 && arr(1).trim.toInt == 0) ignore = true
+		    	    
+		    	  sb.append(arr(1).trim)
+		    	  sb.append(",")
 		      });
 		      
-		      p.write("\r\n");
+		      if(!ignore) {
+		    	p.write(sb.toString())
+		        p.write("\r\n");
+		      }else {
+		        println("ignoring " + file.getName)
+		      }
 		      p.flush();
         }
     }
